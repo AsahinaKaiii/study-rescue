@@ -1,10 +1,15 @@
+import Dashboard from "./pages/Dashboard";
+
 function App() {
+  function handleAddAssignment() {
+    alert("Add Assignment page coming next!");
+  }
+
   return (
-    <div>
-      <h1>Study Rescue</h1>
-      <p>Your AI-powered academic recovery planner.</p>
-    </div>
-  )
+    <Dashboard
+      onAddAssignment={handleAddAssignment}
+    />
+  );
 }
 
-export default App
+export default App;
