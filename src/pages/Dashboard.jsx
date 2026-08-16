@@ -5,6 +5,7 @@ function Dashboard({
   assignments,
   onAddAssignment,
   onLogout,
+  onUpdateProgress,
 }) {const completed = assignments.filter(
     (assignment) => assignment.progress === 100
   ).length;
@@ -114,10 +115,11 @@ function Dashboard({
           ) : (
             <div className="assignment-grid">
               {sortedAssignments.map((assignment) => (
-                <AssignmentCard
-                  key={assignment.id}
-                  assignment={assignment}
-                />
+               <AssignmentCard
+  key={assignment.id}
+  assignment={assignment}
+  onUpdateProgress={onUpdateProgress}
+/>
               ))}
             </div>
           )}

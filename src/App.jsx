@@ -53,7 +53,10 @@ function App() {
         });
 
       if (error) {
-        console.error("Error loading assignments:", error);
+        console.error(
+          "Error loading assignments:",
+          error
+        );
         return;
       }
 
@@ -64,7 +67,8 @@ function App() {
           title: assignment.title,
           deadline: assignment.deadline,
           weight: assignment.weight,
-          estimatedHours: assignment.estimated_hours,
+          estimatedHours:
+            assignment.estimated_hours,
           difficulty: assignment.difficulty,
           progress: assignment.progress,
         })
@@ -83,7 +87,9 @@ function App() {
     const cleanAssignment = {
       ...formData,
       weight: Number(formData.weight),
-      estimatedHours: Number(formData.estimatedHours),
+      estimatedHours: Number(
+        formData.estimatedHours
+      ),
       progress: Number(formData.progress),
     };
 
@@ -112,7 +118,10 @@ function App() {
       .single();
 
     if (error) {
-      console.error("Error saving assignment:", error);
+      console.error(
+        "Error saving assignment:",
+        error
+      );
 
       alert(
         "Assignment could not be saved. Check the browser console."
@@ -139,33 +148,88 @@ function App() {
 
     setPage("dashboard");
   }
-async function handleLogout() {
-  const { error } = await supabase.auth.signOut({
-    scope: "local",
-  });
 
-  if (error) {
-    console.error("Error signing out:", error);
-    alert("Could not sign out. Please try again.");
-    return;
+  // Sign user out
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut({
+      scope: "local",
+    });
+
+    if (error) {
+      console.error(
+        "Error signing out:",
+        error
+      );
+
+      alert(
+        "Could not sign out. Please try again."
+      );
+
+      return;
+    }
+
+    setPage("dashboard");
   }
 
-  setPage("dashboard");
-}
-async function handleLogout() {
-  const { error } = await supabase.auth.signOut({
-    scope: "local",
-  });
+  // Update assignment progress
+  async function handleUpdateProgress(
+    assignmentId,
+    newProgress
+  ) {
+    const assignment = assignments.find(
+      (item) => item.id === assignmentId
+    );
 
-  if (error) {
-    console.error("Error signing out:", error);
-    alert("Could not sign out. Please try again.");
-    return;
+    if (!assignment) return;
+
+    const updatedAssignment = {
+      ...assignment,
+      progress: Number(newProgress),
+    };
+
+    const priority =
+      calculatePriority(updatedAssignment);
+
+    const { data, error } = await supabase
+      .from("assignments")
+      .update({
+        progress: Number(newProgress),
+        priority_score: priority.score,
+        status:
+          Number(newProgress) === 100
+            ? "completed"
+            : "pending",
+      })
+      .eq("id", assignmentId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(
+        "Error updating progress:",
+        error
+      );
+
+      alert(
+        "Progress could not be updated."
+      );
+
+      return;
+    }
+
+    setAssignments((previous) =>
+      previous.map((item) =>
+        item.id === assignmentId
+          ? {
+              ...item,
+              progress: data.progress,
+            }
+          : item
+      )
+    );
   }
 
-  setPage("dashboard");
-}
-
+  // Loading screen
   if (loading) {
     return (
       <div className="page">
@@ -176,26 +240,34 @@ async function handleLogout() {
     );
   }
 
+  // Login page
   if (!session) {
     return <Auth />;
   }
 
+  // Add assignment page
   if (page === "add") {
     return (
       <AddAssignment
         onSave={handleSaveAssignment}
-        onCancel={() => setPage("dashboard")}
+        onCancel={() =>
+          setPage("dashboard")
+        }
       />
     );
   }
 
+  // Main dashboard
   return (
-  <Dashboard
-    assignments={assignments}
-    onAddAssignment={() => setPage("add")}
-    onLogout={handleLogout}
-  />
-);
+    <Dashboard
+      assignments={assignments}
+      onAddAssignment={() =>
+        setPage("add")
+      }
+      onLogout={handleLogout}
+      onUpdateProgress={handleUpdateProgress}
+    />
+  );
 }
 
 export default App;
