@@ -355,6 +355,140 @@ const [generatingPlan, setGeneratingPlan] = useState(false);
     setPage("dashboard");
   }
 
+  function buildFallbackPlan(recoveryInfo = null) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const unfinishedAssignments = assignments
+    .filter(
+      (assignment) =>
+        Number(assignment.progress || 0) < 100
+    )
+    .map((assignment) => ({
+      ...assignment,
+      priorityScore:
+        calculatePriority(assignment).score,
+      remainingMinutes: Math.max(
+        0,
+        Math.round(
+          Number(assignment.estimatedHours || 0) *
+            60 *
+            (1 -
+              Number(assignment.progress || 0) /
+                100)
+        )
+      ),
+    }))
+    .sort(
+      (a, b) =>
+        b.priorityScore - a.priorityScore
+    );
+
+  const studyDays = [];
+
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+
+    const dayName = dayNames[date.getDay()];
+
+    studyDays.push({
+      day: dayName,
+      date: date.toISOString().split("T")[0],
+      dateObject: date,
+      remainingMinutes:
+        Number(availability[dayName] || 0) * 60,
+      sessions: [],
+    });
+  }
+
+  const warnings = [];
+
+  unfinishedAssignments.forEach((assignment) => {
+    let minutesLeft = assignment.remainingMinutes;
+
+    const deadline = new Date(
+      `${assignment.deadline}T00:00:00`
+    );
+
+    for (const studyDay of studyDays) {
+      if (minutesLeft <= 0) {
+        break;
+      }
+
+      if (studyDay.dateObject > deadline) {
+        break;
+      }
+
+      while (
+        minutesLeft > 0 &&
+        studyDay.remainingMinutes > 0
+      ) {
+        const sessionMinutes = Math.min(
+          minutesLeft,
+          studyDay.remainingMinutes,
+          90
+        );
+
+        studyDay.sessions.push({
+          assignment: assignment.title,
+          duration_minutes: sessionMinutes,
+          task: `Continue work on ${assignment.title}`,
+          reason:
+            "Fallback session based on deadline, remaining workload, priority, and study availability.",
+        });
+
+        minutesLeft -= sessionMinutes;
+        studyDay.remainingMinutes -=
+          sessionMinutes;
+      }
+    }
+
+    if (minutesLeft > 0) {
+      warnings.push(
+        `${assignment.title} may not fit into your available study time before its deadline.`
+      );
+    }
+  });
+
+  const daysWithSessions = studyDays
+    .filter((day) => day.sessions.length > 0)
+    .map(({ day, date, sessions }) => ({
+      day,
+      date,
+      sessions,
+    }));
+
+  let summary =
+    "AI scheduling is temporarily unavailable. Study Rescue created a local fallback plan using your deadlines, remaining workload, priorities, and available study time.";
+
+  if (recoveryInfo) {
+    summary =
+      `Recovery fallback plan: You missed ${recoveryInfo.missedHours} study hour(s) because of ${recoveryInfo.reason}. ` +
+      "Study Rescue rebuilt your schedule locally using your remaining workload, deadlines, priorities, and availability.";
+  }
+
+  if (warnings.length > 0) {
+    summary += ` Warning: ${warnings.join(" ")}`;
+  }
+
+  return {
+    summary,
+    days: daysWithSessions,
+  };
+}
+
+
   async function handleGenerateRescuePlan() {
   if (assignments.length === 0) {
     alert("Add at least one assignment first.");
@@ -385,22 +519,32 @@ const [generatingPlan, setGeneratingPlan] = useState(false);
   setGeneratingPlan(false);
 
   if (error) {
-    console.error(
-      "Error generating rescue plan:",
-      error
-    );
+  console.error(
+    "Error generating rescue plan:",
+    error
+  );
 
-    alert(
-      "The AI rescue plan could not be generated."
-    );
+  const fallbackPlan =
+    buildFallbackPlan();
 
-    return;
-  }
+  setRescuePlan(fallbackPlan);
 
-  if (!data?.plan) {
-    alert("The AI returned no plan.");
-    return;
-  }
+  return;
+}
+
+  if (error) {
+  console.error(
+    "Error generating rescue plan:",
+    error
+  );
+
+  const fallbackPlan =
+    buildFallbackPlan();
+
+  setRescuePlan(fallbackPlan);
+
+  return;
+}
 
   setRescuePlan(data.plan);
 }
@@ -440,23 +584,36 @@ async function handleRecoveryPlan({
 
   setGeneratingPlan(false);
 
-  if (error) {
-    console.error(
-      "Error rebuilding rescue plan:",
-      error
-    );
+ if (error) {
+  console.error(
+    "Error rebuilding rescue plan:",
+    error
+  );
 
-    alert(
-      "Study Rescue could not rebuild your plan."
-    );
+  const fallbackPlan =
+    buildFallbackPlan({
+      missedHours,
+      reason,
+    });
 
-    return;
-  }
+  setRescuePlan(fallbackPlan);
+  setPage("dashboard");
+
+  return;
+}
 
   if (!data?.plan) {
-    alert("The AI returned no recovery plan.");
-    return;
-  }
+  const fallbackPlan =
+    buildFallbackPlan({
+      missedHours,
+      reason,
+    });
+
+  setRescuePlan(fallbackPlan);
+  setPage("dashboard");
+
+  return;
+}
 
   setRescuePlan(data.plan);
   setPage("dashboard");
