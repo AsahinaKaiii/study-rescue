@@ -12,6 +12,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState([]);
 
+  const [rescuePlan, setRescuePlan] = useState(null);
+const [generatingPlan, setGeneratingPlan] = useState(false);
+
     const [availability, setAvailability] = useState({
     Monday: 0,
     Tuesday: 0,
@@ -351,6 +354,56 @@ function App() {
     setPage("dashboard");
   }
 
+  async function handleGenerateRescuePlan() {
+  if (assignments.length === 0) {
+    alert("Add at least one assignment first.");
+    return;
+  }
+
+  setGeneratingPlan(true);
+
+  const assignmentsForAI = assignments.map(
+    (assignment) => ({
+      ...assignment,
+      priorityScore:
+        calculatePriority(assignment).score,
+    })
+  );
+
+  const { data, error } =
+    await supabase.functions.invoke(
+      "generate-rescue-plan",
+      {
+        body: {
+          assignments: assignmentsForAI,
+          availability,
+        },
+      }
+    );
+
+  setGeneratingPlan(false);
+
+  if (error) {
+    console.error(
+      "Error generating rescue plan:",
+      error
+    );
+
+    alert(
+      "The AI rescue plan could not be generated."
+    );
+
+    return;
+  }
+
+  if (!data?.plan) {
+    alert("The AI returned no plan.");
+    return;
+  }
+
+  setRescuePlan(data.plan);
+}
+
   // Loading screen
   if (loading) {
     return (
@@ -391,16 +444,17 @@ function App() {
   // Main dashboard
   return (
     <Dashboard
-      assignments={assignments}
-      onAddAssignment={() =>
-        setPage("add")
-      }
-      onLogout={handleLogout}
-      onUpdateProgress={handleUpdateProgress}
-      onAvailability={() => setPage("availability")
-
-      }
-    />
+  assignments={assignments}
+  onAddAssignment={() => setPage("add")}
+  onLogout={handleLogout}
+  onUpdateProgress={handleUpdateProgress}
+  onAvailability={() =>
+    setPage("availability")
+  }
+  onGeneratePlan={handleGenerateRescuePlan}
+  rescuePlan={rescuePlan}
+  generatingPlan={generatingPlan}
+/>
   );
 }
 

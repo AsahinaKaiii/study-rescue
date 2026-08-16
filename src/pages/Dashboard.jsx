@@ -6,7 +6,10 @@ function Dashboard({
   onAddAssignment,
   onLogout,
   onUpdateProgress,
-    onAvailability,
+  onAvailability,
+  onGeneratePlan,
+  rescuePlan,
+  generatingPlan,
 }) {const completed = assignments.filter(
     (assignment) => assignment.progress === 100
   ).length;
@@ -94,6 +97,67 @@ function Dashboard({
             <h2>{remaining}</h2>
           </div>
         </section>
+
+<section className="ai-plan-section">
+  <div className="ai-plan-header">
+    <div>
+      <h2>AI Rescue Plan</h2>
+
+      <p className="section-description">
+        Build a realistic study schedule from your
+        deadlines, priorities, and available hours.
+      </p>
+    </div>
+
+    <button
+      className="primary-button"
+      onClick={onGeneratePlan}
+      disabled={generatingPlan}
+    >
+      {generatingPlan
+        ? "Generating..."
+        : "Generate My Rescue Plan"}
+    </button>
+  </div>
+
+  {rescuePlan && (
+    <div className="rescue-plan-card">
+      <h3>{rescuePlan.summary}</h3>
+
+      {rescuePlan.days?.map((day) => (
+        <div
+          className="plan-day"
+          key={day.day}
+        >
+          <h4>{day.day}</h4>
+
+          {day.sessions?.map(
+            (session, index) => (
+              <div
+                className="plan-session"
+                key={index}
+              >
+                <strong>
+                  {session.assignment}
+                </strong>
+
+                <span>
+                  {session.duration_minutes} min
+                </span>
+
+                <p>{session.task}</p>
+
+                <small>
+                  {session.reason}
+                </small>
+              </div>
+            )
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</section>
 
         <section>
           <h2>Priority Tasks</h2>

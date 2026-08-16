@@ -408,3 +408,46 @@ form .primary-button {
 .save-progress-button:hover {
   opacity: 0.9;
 }
+
+.ai-plan-section {
+  margin: 35px 0;
+}
+
+.ai-plan-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.rescue-plan-card {
+  margin-top: 20px;
+  background: white;
+  border: 1px solid #e5e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.plan-day {
+  margin-top: 25px;
+}
+
+.plan-session {
+  margin-top: 12px;
+  padding: 15px;
+  border: 1px solid #e5e8f0;
+  border-radius: 8px;
+}
+
+.plan-session span {
+  margin-left: 12px;
+  color: #6c7589;
+}
+
+.plan-session p {
+  margin-bottom: 5px;
+}
+
+.plan-session small {
+  color: #6c7589;
+}
