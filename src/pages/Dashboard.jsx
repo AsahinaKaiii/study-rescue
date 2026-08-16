@@ -131,8 +131,11 @@ function Dashboard({
         >
           <h4>{day.day}</h4>
 
-          {day.sessions?.map(
-            (session, index) => (
+         {day.sessions
+  ?.filter(
+    (session) => session.duration_minutes > 0
+  )
+  .map((session, index) => (
               <div
                 className="plan-session"
                 key={index}
