@@ -5,6 +5,7 @@ import Auth from "./pages/Auth";
 import { supabase } from "./services/supabase";
 import { calculatePriority } from "./utils/priority";
 import Availability from "./pages/Availability";
+import Recovery from "./pages/Recovery";
 
 function App() {
   const [page, setPage] = useState("dashboard");
@@ -404,6 +405,63 @@ const [generatingPlan, setGeneratingPlan] = useState(false);
   setRescuePlan(data.plan);
 }
 
+async function handleRecoveryPlan({
+  missedHours,
+  reason,
+}) {
+  if (assignments.length === 0) {
+    alert("Add at least one assignment first.");
+    return;
+  }
+
+  setGeneratingPlan(true);
+
+  const assignmentsForAI = assignments.map(
+    (assignment) => ({
+      ...assignment,
+      priorityScore:
+        calculatePriority(assignment).score,
+    })
+  );
+
+  const { data, error } =
+    await supabase.functions.invoke(
+      "generate-rescue-plan",
+      {
+        body: {
+          assignments: assignmentsForAI,
+          availability,
+          mode: "recovery",
+          missedHours,
+          reason,
+        },
+      }
+    );
+
+  setGeneratingPlan(false);
+
+  if (error) {
+    console.error(
+      "Error rebuilding rescue plan:",
+      error
+    );
+
+    alert(
+      "Study Rescue could not rebuild your plan."
+    );
+
+    return;
+  }
+
+  if (!data?.plan) {
+    alert("The AI returned no recovery plan.");
+    return;
+  }
+
+  setRescuePlan(data.plan);
+  setPage("dashboard");
+}
+
   // Loading screen
   if (loading) {
     return (
@@ -441,6 +499,16 @@ const [generatingPlan, setGeneratingPlan] = useState(false);
       />
     );
   }
+
+  if (page === "recovery") {
+  return (
+    <Recovery
+      onRecover={handleRecoveryPlan}
+      onCancel={() => setPage("dashboard")}
+      generatingPlan={generatingPlan}
+    />
+  );
+}
   // Main dashboard
   return (
     <Dashboard
@@ -454,6 +522,9 @@ const [generatingPlan, setGeneratingPlan] = useState(false);
   onGeneratePlan={handleGenerateRescuePlan}
   rescuePlan={rescuePlan}
   generatingPlan={generatingPlan}
+  onFellBehind={() =>
+  setPage("recovery")
+}
 />
   );
 }

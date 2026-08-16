@@ -10,6 +10,7 @@ function Dashboard({
   onGeneratePlan,
   rescuePlan,
   generatingPlan,
+   onFellBehind,
 }) {const completed = assignments.filter(
     (assignment) => assignment.progress === 100
   ).length;
@@ -45,10 +46,12 @@ function Dashboard({
 </nav>
 
     <div className="sidebar-bottom">
-  <button className="rescue-button">
-    I Fell Behind
-  </button>
-
+  <button
+  className="rescue-button"
+  onClick={onFellBehind}
+>
+  I Fell Behind
+</button>
   <button
     className="logout-button"
     onClick={onLogout}
