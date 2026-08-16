@@ -6,6 +6,7 @@ function Dashboard({
   onAddAssignment,
   onLogout,
   onUpdateProgress,
+    onAvailability,
 }) {const completed = assignments.filter(
     (assignment) => assignment.progress === 100
   ).length;
@@ -25,14 +26,20 @@ function Dashboard({
         <h2>Study Rescue</h2>
 
         <nav>
-          <button className="nav-active">
-            Dashboard
-          </button>
+  <button className="nav-active">
+    Dashboard
+  </button>
 
-          <button>Assignments</button>
-          <button>Study Plan</button>
-          <button>Progress</button>
-        </nav>
+  <button>Assignments</button>
+
+  <button>Study Plan</button>
+
+  <button onClick={onAvailability}>
+    Availability
+  </button>
+
+  <button>Progress</button>
+</nav>
 
     <div className="sidebar-bottom">
   <button className="rescue-button">

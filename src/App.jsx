@@ -4,12 +4,23 @@ import AddAssignment from "./pages/AddAssignment";
 import Auth from "./pages/Auth";
 import { supabase } from "./services/supabase";
 import { calculatePriority } from "./utils/priority";
+import Availability from "./pages/Availability";
 
 function App() {
   const [page, setPage] = useState("dashboard");
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState([]);
+
+    const [availability, setAvailability] = useState({
+    Monday: 0,
+    Tuesday: 0,
+    Wednesday: 0,
+    Thursday: 0,
+    Friday: 0,
+    Saturday: 0,
+    Sunday: 0,
+  });
 
   // Check whether user is logged in
   useEffect(() => {
@@ -229,6 +240,11 @@ function App() {
     );
   }
 
+    function handleSaveAvailability(data) {
+    setAvailability(data);
+    setPage("dashboard");
+  }
+
   // Loading screen
   if (loading) {
     return (
@@ -257,6 +273,15 @@ function App() {
     );
   }
 
+    if (page === "availability") {
+    return (
+      <Availability
+        onSave={handleSaveAvailability}
+        onCancel={() => setPage("dashboard")}
+      />
+    );
+  }
+
   // Main dashboard
   return (
     <Dashboard
@@ -266,6 +291,9 @@ function App() {
       }
       onLogout={handleLogout}
       onUpdateProgress={handleUpdateProgress}
+      onAvailability={() => setPage("availability")
+        
+      }
     />
   );
 }
