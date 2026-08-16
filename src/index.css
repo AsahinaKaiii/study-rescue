@@ -350,3 +350,24 @@ form .primary-button {
   font-size: 13px;
   color: #6c7589;
 }
+
+.secondary-button {
+  border: 1px solid #4559e8;
+  border-radius: 8px;
+  padding: 13px 20px;
+  background: white;
+  color: #4559e8;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.secondary-button:hover {
+  background: #f1f3ff;
+}
+
+.auth-message {
+  margin-top: 15px;
+  color: #6c7589;
+  font-size: 14px;
+}
