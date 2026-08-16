@@ -371,3 +371,19 @@ form .primary-button {
   color: #6c7589;
   font-size: 14px;
 }
+
+.logout-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid #46516a;
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #29344e;
+}

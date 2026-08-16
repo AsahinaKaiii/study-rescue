@@ -139,6 +139,32 @@ function App() {
 
     setPage("dashboard");
   }
+async function handleLogout() {
+  const { error } = await supabase.auth.signOut({
+    scope: "local",
+  });
+
+  if (error) {
+    console.error("Error signing out:", error);
+    alert("Could not sign out. Please try again.");
+    return;
+  }
+
+  setPage("dashboard");
+}
+async function handleLogout() {
+  const { error } = await supabase.auth.signOut({
+    scope: "local",
+  });
+
+  if (error) {
+    console.error("Error signing out:", error);
+    alert("Could not sign out. Please try again.");
+    return;
+  }
+
+  setPage("dashboard");
+}
 
   if (loading) {
     return (
@@ -164,11 +190,12 @@ function App() {
   }
 
   return (
-    <Dashboard
-      assignments={assignments}
-      onAddAssignment={() => setPage("add")}
-    />
-  );
+  <Dashboard
+    assignments={assignments}
+    onAddAssignment={() => setPage("add")}
+    onLogout={handleLogout}
+  />
+);
 }
 
 export default App;

@@ -4,8 +4,8 @@ import { calculatePriority } from "../utils/priority";
 function Dashboard({
   assignments,
   onAddAssignment,
-}) {
-  const completed = assignments.filter(
+  onLogout,
+}) {const completed = assignments.filter(
     (assignment) => assignment.progress === 100
   ).length;
 
@@ -33,11 +33,18 @@ function Dashboard({
           <button>Progress</button>
         </nav>
 
-        <div className="sidebar-bottom">
-          <button className="rescue-button">
-            I Fell Behind
-          </button>
-        </div>
+    <div className="sidebar-bottom">
+  <button className="rescue-button">
+    I Fell Behind
+  </button>
+
+  <button
+    className="logout-button"
+    onClick={onLogout}
+  >
+    Sign Out
+  </button>
+</div>
       </aside>
 
       <main className="dashboard">
