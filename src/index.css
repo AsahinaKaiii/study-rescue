@@ -313,3 +313,40 @@ form .primary-button {
   height: 100%;
   background: #4559e8;
 }
+
+/* Priority System */
+
+.priority-badge {
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  height: fit-content;
+}
+
+.priority-badge.critical {
+  background: #ffe1e1;
+  color: #b42318;
+}
+
+.priority-badge.high {
+  background: #ffead5;
+  color: #b54708;
+}
+
+.priority-badge.medium {
+  background: #fff4cc;
+  color: #7a5d00;
+}
+
+.priority-badge.low {
+  background: #ddf7e7;
+  color: #15703d;
+}
+
+.priority-score {
+  margin-top: 14px;
+  font-size: 13px;
+  color: #6c7589;
+}

@@ -1,4 +1,5 @@
 import AssignmentCard from "../components/AssignmentCard";
+import { calculatePriority } from "../utils/priority";
 
 function Dashboard({
   assignments,
@@ -10,6 +11,12 @@ function Dashboard({
 
   const remaining =
     assignments.length - completed;
+
+    const sortedAssignments = [...assignments].sort(
+  (a, b) =>
+    calculatePriority(b).score -
+    calculatePriority(a).score
+);
 
   return (
     <div className="app-layout">
@@ -99,7 +106,7 @@ function Dashboard({
             </div>
           ) : (
             <div className="assignment-grid">
-              {assignments.map((assignment) => (
+              {sortedAssignments.map((assignment) => (
                 <AssignmentCard
                   key={assignment.id}
                   assignment={assignment}

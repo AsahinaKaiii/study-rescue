@@ -1,4 +1,8 @@
+import { calculatePriority } from "../utils/priority";
+
 function AssignmentCard({ assignment }) {
+  const result = calculatePriority(assignment);
+
   return (
     <div className="assignment-card">
       <div className="assignment-top">
@@ -10,27 +14,30 @@ function AssignmentCard({ assignment }) {
           <h3>{assignment.title}</h3>
         </div>
 
-        <span className="difficulty">
-          {assignment.difficulty}
+        <span
+          className={`priority-badge ${result.priority.toLowerCase()}`}
+        >
+          {result.priority}
         </span>
       </div>
 
       <div className="assignment-details">
-        <span>
-          Due: {assignment.deadline}
-        </span>
+        <span>Due: {assignment.deadline}</span>
 
         <span>
-          Weight: {assignment.weight}%
+          {result.daysLeft <= 0
+            ? "Due today / overdue"
+            : `${result.daysLeft} day${result.daysLeft === 1 ? "" : "s"} left`}
         </span>
 
-        <span>
-          Est: {assignment.estimatedHours} hrs
-        </span>
+        <span>Weight: {assignment.weight}%</span>
+
+        <span>Est: {assignment.estimatedHours} hrs</span>
       </div>
 
       <div className="progress-row">
         <span>Progress</span>
+
         <strong>{assignment.progress}%</strong>
       </div>
 
@@ -41,6 +48,10 @@ function AssignmentCard({ assignment }) {
             width: `${assignment.progress}%`,
           }}
         ></div>
+      </div>
+
+      <div className="priority-score">
+        Priority Score: <strong>{result.score}</strong>
       </div>
     </div>
   );
