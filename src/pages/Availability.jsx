@@ -1,16 +1,13 @@
 import { useState } from "react";
 
-function Availability({ onSave, onCancel }) {
-  const [availability, setAvailability] = useState({
-    Monday: 0,
-    Tuesday: 0,
-    Wednesday: 0,
-    Thursday: 0,
-    Friday: 0,
-    Saturday: 0,
-    Sunday: 0,
-  });
-
+function Availability({
+  initialAvailability,
+  onSave,
+  onCancel,
+}) {
+  const [availability, setAvailability] = useState(
+    initialAvailability
+  );
   function handleChange(day, value) {
     setAvailability((previous) => ({
       ...previous,
