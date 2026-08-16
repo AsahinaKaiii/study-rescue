@@ -3,22 +3,15 @@ import Dashboard from "./pages/Dashboard";
 import AddAssignment from "./pages/AddAssignment";
 import Auth from "./pages/Auth";
 import { supabase } from "./services/supabase";
+import { calculatePriority } from "./utils/priority";
 
 function App() {
   const [page, setPage] = useState("dashboard");
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState([]);
 
-  const [assignments, setAssignments] = useState(() => {
-    const savedAssignments = localStorage.getItem(
-      "study-rescue-assignments"
-    );
-
-    return savedAssignments
-      ? JSON.parse(savedAssignments)
-      : [];
-  });
-
+  // Check whether user is logged in
   useEffect(() => {
     async function checkSession() {
       const {
@@ -44,25 +37,104 @@ function App() {
     };
   }, []);
 
+  // Load assignments from Supabase
   useEffect(() => {
-    localStorage.setItem(
-      "study-rescue-assignments",
-      JSON.stringify(assignments)
-    );
-  }, [assignments]);
+    if (!session) {
+      setAssignments([]);
+      return;
+    }
 
-  function handleSaveAssignment(formData) {
-    const newAssignment = {
-      id: Date.now(),
+    async function loadAssignments() {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*")
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (error) {
+        console.error("Error loading assignments:", error);
+        return;
+      }
+
+      const formattedAssignments = data.map(
+        (assignment) => ({
+          id: assignment.id,
+          module: assignment.module,
+          title: assignment.title,
+          deadline: assignment.deadline,
+          weight: assignment.weight,
+          estimatedHours: assignment.estimated_hours,
+          difficulty: assignment.difficulty,
+          progress: assignment.progress,
+        })
+      );
+
+      setAssignments(formattedAssignments);
+    }
+
+    loadAssignments();
+  }, [session]);
+
+  // Save assignment to Supabase
+  async function handleSaveAssignment(formData) {
+    if (!session) return;
+
+    const cleanAssignment = {
       ...formData,
       weight: Number(formData.weight),
       estimatedHours: Number(formData.estimatedHours),
       progress: Number(formData.progress),
     };
 
+    const priority =
+      calculatePriority(cleanAssignment);
+
+    const { data, error } = await supabase
+      .from("assignments")
+      .insert({
+        user_id: session.user.id,
+        module: cleanAssignment.module,
+        title: cleanAssignment.title,
+        deadline: cleanAssignment.deadline,
+        weight: cleanAssignment.weight,
+        estimated_hours:
+          cleanAssignment.estimatedHours,
+        difficulty: cleanAssignment.difficulty,
+        progress: cleanAssignment.progress,
+        priority_score: priority.score,
+        status:
+          cleanAssignment.progress === 100
+            ? "completed"
+            : "pending",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error saving assignment:", error);
+
+      alert(
+        "Assignment could not be saved. Check the browser console."
+      );
+
+      return;
+    }
+
+    const newAssignment = {
+      id: data.id,
+      module: data.module,
+      title: data.title,
+      deadline: data.deadline,
+      weight: data.weight,
+      estimatedHours: data.estimated_hours,
+      difficulty: data.difficulty,
+      progress: data.progress,
+    };
+
     setAssignments((previous) => [
-      ...previous,
       newAssignment,
+      ...previous,
     ]);
 
     setPage("dashboard");
