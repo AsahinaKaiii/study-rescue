@@ -2,7 +2,7 @@
 
 Study Rescue is an AI-powered academic planning application designed to help students decide what to work on first, build realistic study schedules, and recover when they fall behind.
 
-<u>## 1. The Problem<u/>
+## 1. The Problem
 
 Students often have several assignments competing for their attention.
 
